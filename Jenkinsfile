@@ -26,11 +26,11 @@ node {
         withEnv(['volume=$(pwd)/sources:/src', 'image=cdrx/pyinstaller-linux:python2']) {
             node {
                 
-                sh "docker run --rm -v ${volume} ${image} 'ls -a'"
+                sh "docker run --rm -v ${volume} ${image} 'pyinstaller -F add2vals.py'"
                 
                 sh 'sleep 1m'
             
-                archiveArtifacts "sources/dist/add2vals" 
+                archiveArtifacts "/sources/dist/add2vals" 
                 sh "docker run --rm -v ${volume} ${image} 'rm -rf build dist'"
             }
         }
