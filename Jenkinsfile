@@ -42,6 +42,7 @@ pipeline {
                 dir(path: env.BUILD_ID) { 
                     unstash(name: 'compiled-results') 
                     sh "docker run --rm -v ${VOLUME} ${IMAGE} 'pyinstaller -F add2vals.py'" 
+                    sh "sleep 1m"
                 }
             }
             post {
