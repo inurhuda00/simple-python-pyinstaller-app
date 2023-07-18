@@ -1,10 +1,12 @@
 node {
+
     stage('Build') {
         docker.image('python:2-alpine').inside {
             sh 'python -m py_compile sources/add2vals.py sources/calc.py'
             stash(name: 'compiled-results', includes: 'sources/*.py*')
         }
     }
+
     stage('Test') {
         docker.image('qnib/pytest').inside {
             try {
@@ -18,6 +20,16 @@ node {
     stage('Manual Approve') {
         node {
             input message: 'Lanjutkan ke tahap Deploy? (Klik "Proceed" untuk lanjut)'
+        }
+    }
+
+    stage('Deploy') {
+        docker.image('cdrx/pyinstaller-linux:python2').inside {
+            try{
+                sh 'pyinstaller --onefile sources/add2vals.py'
+            } finally {
+                archiveArtifacts 'dist/add2vals'
+            }
         }
     }
 }
