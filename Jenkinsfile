@@ -27,12 +27,12 @@ node {
         withEnv(['volume=${WORKSPACE}/sources:/src', 'image=cdrx/pyinstaller-linux:python2']) {
             node {
                 unstash name: 'compiled-results'
-                sh "docker run --rm -v ${volume} ${image} pyinstaller -F /src/add2vals.py"
+                sh 'docker run --rm -v ${volume} ${image} pyinstaller -F /src/add2vals.py'
+                sh 'ls /src'
 
-                archiveArtifacts "sources/dist/add2vals"
-                sh "docker run --rm -v ${volume} ${image} rm -rf /src/build /src/dist"
+                archiveArtifacts 'sources/dist/add2vals'
+                sh 'docker run --rm -v ${volume} ${image} rm -rf /src/build /src/dist'
             }
         }
     }
-
 }
