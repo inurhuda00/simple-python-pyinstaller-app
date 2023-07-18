@@ -3,7 +3,7 @@ node {
     stage('Build') {
         docker.image('python:2-alpine').inside {
             sh 'python -m py_compile sources/add2vals.py sources/calc.py'
-            stash(name: 'compiled-results', includes: 'sources/*.py*')
+            stash name: 'compiled-results', includes: 'sources/*.py*'
         }
     }
 
@@ -26,7 +26,7 @@ node {
     stage('Deploy') {
         withEnv(['volume=$(pwd)/sources:/src', 'image=cdrx/pyinstaller-linux:python2']) {
             node {
-                unstash(name: 'compiled-results')
+                unstash name: 'compiled-results'
                 sh "docker run --rm -v ${volume} ${image} 'pyinstaller -F add2vals.py'"
                 
                 sh 'sleep 1m'
