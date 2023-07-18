@@ -1,37 +1,44 @@
-node {
-
-    stage('Build') {
-        docker.image('python:2-alpine').inside {
-            sh 'python -m py_compile sources/add2vals.py sources/calc.py'
-            stash name: 'compiled-results', includes: 'sources/*.py*'
-        }
-    }
-
-    docker.image('qnib/pytest').inside {
-        stage('Test') {
-            try {
-                sh 'py.test --verbose --junit-xml test-reports/results.xml sources/test_calc.py'
-            } finally {
-                junit 'test-reports/results.xml'
+pipeline {
+    agent none
+    stages {
+        stage('Build') {
+            agent {
+                docker {
+                    image 'python:2-alpine'
+                }
+            }
+            steps {
+                sh 'python -m py_compile sources/add2vals.py sources/calc.py'
             }
         }
-    }
-    
-    stage('Manual Approve') {
-        node {
-            input message: 'Lanjutkan ke tahap Deploy? (Klik "Proceed" untuk lanjut)'
+        stage('Test') {
+            agent {
+                docker {
+                    image 'qnib/pytest'
+                }
+            }
+            steps {
+                sh 'py.test --verbose --junit-xml test-reports/results.xml sources/test_calc.py'
+            }
+            post {
+                always {
+                    junit 'test-reports/results.xml'
+                }
+            }
         }
-    }
-    
-    stage('Deploy') {
-        withEnv(['volume=${WORKSPACE}/sources:/src', 'image=cdrx/pyinstaller-linux:python2']) {
-            node {
-                unstash name: 'compiled-results'
-                sh 'docker run --rm -v ${volume} ${image} pyinstaller -F /src/add2vals.py'
-                sh 'ls /src'
-
-                archiveArtifacts 'sources/dist/add2vals'
-                sh 'docker run --rm -v ${volume} ${image} rm -rf /src/build /src/dist'
+        stage('Deliver') {
+            agent {
+                docker {
+                    image 'cdrx/pyinstaller-linux:python2'
+                }
+            }
+            steps {
+                sh 'pyinstaller --onefile sources/add2vals.py'
+            }
+            post {
+                success {
+                    archiveArtifacts 'dist/add2vals'
+                }
             }
         }
     }
