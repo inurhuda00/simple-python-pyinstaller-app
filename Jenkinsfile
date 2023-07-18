@@ -23,10 +23,10 @@ node {
     }
     
     stage('Deploy') {
-        withEnv(['volume=$(pwd)/sources/:/src', 'image=cdrx/pyinstaller-linux:python2']) {
+        withEnv(['volume=$(pwd)/sources:/src', 'image=cdrx/pyinstaller-linux:python2']) {
             node {
                 
-                sh "docker run --rm -v ${volume} ${image} 'pyinstaller -F add2vals.py'"
+                sh "docker run --rm -v ${volume} ${image} 'ls -a'"
                 
                 sh 'sleep 1m'
             
